@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Encontre um médico</title>
+  <style>
+    :root{
+      --primary:#15967d;
+      --primary-contrast:#ffffff;
+      --bg:#f5f7f8;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --danger:#b91c1c;
+      --input-border:#e5e7eb;
+      --ring: rgba(21,150,125,.25);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background:var(--bg);
+      color:#111827;
+      line-height:1.45;
+    }
+
+    .container{
+      max-width:1100px;
+      margin-inline:auto;
+      padding:24px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.06);
+      padding:24px;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:0 0 6px 0;
+      font-size:1.4rem;
+      font-weight:800;
+    }
+
+    .title .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--primary);
+      box-shadow:0 0 0 6px rgba(21,150,125,.12);
+    }
+
+    .subtitle{
+      margin:0 0 18px 0;
+      color:var(--danger);
+      font-size:.86rem;
+      font-weight:600;
+    }
+
+    form{
+      display:grid;
+      gap:16px;
+      grid-template-columns:1fr;
+    }
+
+    @media(min-width:740px){
+      form{grid-template-columns:1fr 1fr}
+    }
+
+    .span-2{grid-column:1 / -1}
+
+    label{
+      display:block;
+      font-weight:600;
+      margin:0 0 6px 0;
+      color:#0f172a;
+      font-size:.95rem;
+    }
+
+    .field{
+      position:relative;
+    }
+
+    input[type="text"], select{
+      width:100%;
+      height:48px;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--input-border);
+      background:#fff;
+      font-size:1rem;
+      outline:none;
+      transition:border-color .15s ease, box-shadow .15s ease;
+    }
+
+    input[type="text"]:focus, select:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 4px var(--ring);
+    }
+
+    .hint{
+      display:block;
+      margin-top:6px;
+      font-size:.85rem;
+      color:var(--muted);
+    }
+
+    .error{
+      display:block;
+      margin-top:6px;
+      font-size:.86rem;
+      color:var(--danger);
+    }
+
+    .actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:12px 22px;
+      border-radius:999px;
+      font-weight:700;
+      cursor:pointer;
+      border:2px solid transparent;
+      transition:transform .06s ease, filter .15s ease, background .15s ease;
+      user-select:none;
+    }
+
+    .btn:active{transform:translateY(1px)}
+
+    .btn-primary{
+      background:var(--primary);
+      color:var(--primary-contrast);
+    }
+    .btn-primary:hover{filter:brightness(1.05)}
+
+    .btn-outline{
+      background:#fff;
+      color:var(--primary);
+      border-color:var(--primary);
+    }
+    .btn-outline:hover{background:#f6fffd}
+
+    /* Resultados */
+    .results{
+      margin-top:22px;
+      display:none;
+    }
+
+    .results-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .results h2{
+      margin:0;
+      font-size:1.1rem;
+    }
+
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      background:#fff;
+      overflow:hidden;
+      border-radius:10px;
+      box-shadow:0 4px 18px rgba(0,0,0,.04);
+    }
+
+    .table th,.table td{
+      padding:12px 14px;
+      border-bottom:1px solid #eef1f4;
+      text-align:left;
+      font-size:.95rem;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:3px 10px;
+      border-radius:999px;
+      font-size:.8rem;
+      background:#e8faf6;
+      color:#0b6e5d;
+      border:1px solid #c9efe6;
+    }
+
+    .btn-ghost{
+      background:#f1f5f9;
+      color:#0f172a;
+      border:none;
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    /* Toast/alerta */
+    .toast{
+      display:none;
+      margin:0 0 12px;
+      padding:12px 14px;
+      border-radius:10px;
+      background:#fde8e8;
+      color:#7f1d1d;
+      border:1px solid #fecaca;
+    }
+
+    /* Acomodar ações no mobile: botões 100% */
+    @media(max-width:739px){
+      .actions{flex-direction:column}
+      .actions .btn{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card" aria-labelledby="titulo">
+      <h1 id="titulo" class="title"><span class="dot" aria-hidden="true"></span> Encontre um médico</h1>
+      <p class="subtitle">(Pelo menos um dos seguintes campos deve ser preenchido: <strong>nome do médico</strong>, <strong>UF</strong>, <strong>CRM</strong>)</p>
+
+      <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+      <form id="formBusca" action="resultado.html">
+        <!-- Nome -->
+        <div class="field span-2">
+          <label for="nome">Nome do médico</label>
+          <input id="nome" name="nome" type="text" placeholder="Digite o nome" autocomplete="off" />
+          <small id="err-nome" class="error" aria-live="polite"></small>
+        </div>
+
+        <!-- UF -->
+        <div class="field">
+          <label for="uf">UF</label>
+          <select id="uf" name="uf" aria-describedby="hint-uf">
+            <option value="">Selecione</option>
+            <option>AC</option><option>AL</option><option>AM</option><option>AP</option>
+            <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+            <option>GO</option><option>MA</option><option>MG</option><option>MS</option>
+            <option>MT</option><option>PA</option><option>PB</option><option>PE</option>
+            <option>PI</option><option>PR</option><option>RJ</option><option>RN</option>
+            <option>RO</option><option>RR</option><option>RS</option><option>SC</option>
+            <option>SE</option><option>SP</option><option>TO</option>
+          </select>
+          <small id="err-uf" class="error" aria-live="polite"></small>
+        </div>
+
+        <!-- CRM -->
+        <div class="field">
+          <label for="crm">CRM</label>
+          <input id="crm" name="crm" type="text" placeholder="Digite o CRM" />
+          <small id="err-crm" class="error" aria-live="polite"></small>
+        </div>
+
+       
+
+        <!-- Ações -->
+        <div class="actions span-2">
+          <button type="button" id="btnLimpar" class="btn btn-outline" aria-label="Limpar filtros">LIMPAR</button>
+          <button type="submit" id="btnEnviar" class="btn btn-primary" aria-label="Enviar busca">
+            <span id="btnText">ENVIAR</span>
+            <span id="btnLoad" class="spinner" aria-hidden="true" style="display:none;">⏳</span>
+          </button>
+        </div>
+      </form>
+
+
+    </section>
+  </main>
+
+  
+</body>
+</html>
